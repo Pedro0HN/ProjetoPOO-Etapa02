@@ -144,3 +144,169 @@ public class Clinica {
                 "Consulta nao encontrada para CPF " + cpf + " em " + data + " " + horario
         );
     }
+
+    public void cancelarConsulta(String cpf, String data, String horario,
+                                 String motivo, String horaAtual)
+            throws ConsultaNaoEncontradaException, OperacaoInvalidaException {
+
+        Consulta c = buscarConsulta(cpf, data, horario);
+        c.cancelar(motivo); // lanca OperacaoInvalidaException se nao puder cancelar
+
+        // calculo de multa: cancelamento com menos de 2h de antecedencia
+        try {
+            int hConsulta = Integer.parseInt(horario.substring(0, 2));
+            int hAgora    = Integer.parseInt(horaAtual.substring(0, 2));
+            if ((hConsulta - hAgora) < 2) {
+                multas.add(50.0);
+                System.out.println("Multa de R$50,00 aplicada por cancelamento tardio.");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Aviso: nao foi possivel calcular multa (horario invalido).");
+        }
+    }
+
+    public void remarcarConsulta(Consulta consulta, String novaData, String novoHorario)
+            throws OperacaoInvalidaException, HorarioIndisponivelException {
+
+        String diaSemana = descobrirDiaSemana(novaData);
+        if (!consulta.getProfissional().atendeNoDia(diaSemana)) {
+            throw new HorarioIndisponivelException(
+                    "Profissional nao atende em: " + diaSemana
+            );
+        }
+        if (temConflito(consulta.getProfissional().getNome(), novaData, novoHorario)) {
+            throw new HorarioIndisponivelException(
+                    "Horario ja ocupado: " + novaData + " " + novoHorario
+            );
+        }
+
+        consulta.remarcar(); // muda status para remarcada
+
+        // cria nova consulta com nova data/horario
+        Consulta nova = new Consulta(
+                consulta.getPaciente(),
+                consulta.getProfissional(),
+                novaData,
+                novoHorario,
+                consulta.getTipo()
+        );
+        consultas.add(nova);
+    }
+
+    public List<Consulta> listarConsultas() {
+        return new ArrayList<>(consultas);
+    }
+
+    public List<Consulta> buscarConsultasPorPaciente(String cpf) {
+        List<Consulta> resultado = new ArrayList<>();
+        for (Consulta c : consultas) {
+            if (c.getPaciente().getCpf().equals(cpf)) {
+                resultado.add(c);
+            }
+        }
+        return resultado;
+    }
+
+    // ---- ATENDIMENTOS ----
+
+    public void registrarAtendimento(Atendimento atendimento)
+            throws OperacaoInvalidaException {
+        Consulta c = atendimento.getConsulta();
+        if (!c.getStatus().equals("agendada")) {
+            throw new OperacaoInvalidaException(
+                    "So e possivel registrar atendimento em consulta agendada. Status atual: "
+                            + c.getStatus()
+            );
+        }
+        c.realizar();
+
+        // registra info especifica da especialidade do profissional (polimorfismo)
+        c.getProfissional().registrarEspecifico(atendimento);
+
+        atendimentos.add(atendimento);
+    }
+
+    public List<Atendimento> listarAtendimentos() {
+        return new ArrayList<>(atendimentos);
+    }
+
+    // ---- PAGAMENTOS ----
+
+    public void registrarPagamento(Pagamento pagamento) {
+        pagamentos.add(pagamento);
+    }
+
+    public List<Pagamento> listarPagamentos() {
+        return new ArrayList<>(pagamentos);
+    }
+
+    // ---- RELATORIOS ----
+
+    // ligacao dinamica: percorre lista de Pessoa e chama exibirResumo() de cada uma
+    public void exibirTodasPessoas() {
+        System.out.println("\n=== CADASTROS GERAIS ===");
+        for (Pessoa p : todasPessoas) {
+            System.out.println(p.exibirResumo()); // comportamento correto por tipo
+            // dynamic casting: exibe info extra se for Paciente ou Profissional
+            if (p instanceof Paciente) {
+                Paciente pac = (Paciente) p;
+                System.out.println("  >> Paciente ativo: " + pac.isAtivo());
+            } else if (p instanceof Profissional) {
+                Profissional prof = (Profissional) p;
+                System.out.println("  >> Valor consulta: R$" + prof.getValorConsulta());
+            }
+            System.out.println("---");
+        }
+    }
+
+    public void exibirResumoFinanceiro() {
+        long realizadas  = consultas.stream().filter(c -> c.getStatus().equals("realizada")).count();
+        long canceladas  = consultas.stream().filter(c -> c.getStatus().equals("cancelada")).count();
+        double faturado  = pagamentos.stream().mapToDouble(Pagamento::calcularValorFinal).sum();
+        double totalMultas = multas.stream().mapToDouble(Double::doubleValue).sum();
+
+        System.out.println("\n=== RESUMO FINANCEIRO ===");
+        System.out.println("Atendimentos realizados: " + realizadas);
+        System.out.println("Cancelamentos: " + canceladas);
+        System.out.printf("Total faturado: R$%.2f%n", faturado);
+        System.out.printf("Total em multas: R$%.2f%n", totalMultas);
+    }
+
+    // ---- AUXILIARES ----
+
+    public boolean temConflito(String nomeProf, String data, String horario) {
+        for (Consulta c : consultas) {
+            if (c.getProfissional().getNome().equals(nomeProf)
+                    && c.getData().equals(data)
+                    && c.getHorario().equals(horario)
+                    && c.getStatus().equals("agendada")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String sugerirHorario(String nomeProf, String data) {
+        for (int h = 8; h <= 18; h++) {
+            String teste = (h < 10 ? "0" + h : h) + ":00";
+            if (!temConflito(nomeProf, data, teste)) return teste;
+        }
+        return "";
+    }
+
+    public String descobrirDiaSemana(String data) {
+        int dia = Integer.parseInt(data.substring(0, 2));
+        int mes = Integer.parseInt(data.substring(3, 5));
+        int ano = Integer.parseInt(data.substring(6, 10));
+
+        if (mes < 3) { mes += 12; ano--; }
+
+        int k = ano % 100;
+        int j = ano / 100;
+        int resultado = (dia + (13 * (mes + 1)) / 5 + k + k/4 + j/4 - 2*j) % 7;
+        if (resultado < 0) resultado += 7;
+
+        String[] nomes = {"sabado","domingo","segunda","terca","quarta","quinta","sexta"};
+        return nomes[resultado];
+    }
+}
