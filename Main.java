@@ -682,6 +682,42 @@ public class Main {
         }
     }
 
+    // ======== AUXILIARES DE LEITURA ========
+
+    // leitura segura de inteiro com retry automatico
+    static int lerInteiro(String label) {
+        while (true) {
+            System.out.print(label);
+            try {
+                return Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Valor invalido. Digite um numero inteiro.");
+            }
+        }
+    }
+
+    // leitura segura de double com retry automatico
+    static double lerDouble(String label) {
+        while (true) {
+            System.out.print(label);
+            try {
+                return Double.parseDouble(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Valor invalido. Digite um numero (ex: 150.00).");
+            }
+        }
+    }
+
+    static Convenio escolherConvenio(Convenio[] convenios) {
+        System.out.println("Convenios disponiveis:");
+        System.out.println("0 - Nenhum");
+        for (int i = 0; i < convenios.length; i++) {
+            System.out.println((i+1) + " - " + convenios[i].getNome());
+        }
+        int op = lerInteiro("Escolha: ");
+        if (op <= 0 || op > convenios.length) return null;
+        return convenios[op - 1];
+    }
     
 }
 
