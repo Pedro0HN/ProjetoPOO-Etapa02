@@ -325,5 +325,38 @@ public class Main {
         }
         for (Profissional p : lista) System.out.println(p.exibirResumo());
     }
+
+    // ======== CONSULTAS ========
+
+    static void menuConsultas() {
+        int op = -1;
+        while (op != 0) {
+            System.out.println("\n--- CONSULTAS ---");
+            System.out.println("1 - Agendar (escolher profissional)");
+            System.out.println("2 - Agendar (por especialidade)");
+            System.out.println("3 - Cancelar");
+            System.out.println("4 - Remarcar");
+            System.out.println("5 - Listar todas");
+            System.out.println("6 - Buscar por CPF");
+            System.out.println("0 - Voltar");
+            System.out.print("Opcao: ");
+            try {
+                op = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Digite um numero valido.");
+                continue;
+            }
+            switch (op) {
+                case 1: agendarComProfissional(); break;
+                case 2: agendarPorEspecialidade(); break;
+                case 3: cancelarConsulta(); break;
+                case 4: remarcarConsulta(); break;
+                case 5: listarConsultas(); break;
+                case 6: buscarConsultasPorCpf(); break;
+                case 0: break;
+                default: System.out.println("Opcao invalida!");
+            }
+        }
+    }
 }
 
