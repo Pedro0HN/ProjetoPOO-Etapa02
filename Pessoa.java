@@ -29,4 +29,14 @@ public abstract class Pessoa {
     // setters
     public void setNome(String nome) { this.nome = nome; }
 
+
+    public void setCpf(String cpf) {
+        if (cpf == null || cpf.trim().isEmpty()) {
+            throw new IllegalArgumentException("CPF não pode ser vazio.");
+        }
+        this.cpf = cpf;
+    }
+
+    public void setTelefone(String telefone) { this.telefone = telefone; }
+    public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
   
