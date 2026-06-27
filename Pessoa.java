@@ -39,4 +39,12 @@ public abstract class Pessoa {
 
     public void setTelefone(String telefone) { this.telefone = telefone; }
     public void setDataNascimento(String dataNascimento) { this.dataNascimento = dataNascimento; }
-  
+
+    //subclasse
+    public abstract String exibirResumo();
+
+    @Override
+    public String toString() {
+        return exibirResumo();
+    }
+}
