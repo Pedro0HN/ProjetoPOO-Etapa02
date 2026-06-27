@@ -273,4 +273,57 @@ public class Main {
             System.out.println("--- operacao de cadastro de profissional finalizada ---");
         }
     }
+    static void atualizarProfissional() {
+        try {
+            System.out.print("Nome: ");
+            String nome = sc.nextLine();
+            Profissional prof = clinica.buscarProfissional(nome);
+
+            System.out.print("Novo registro: ");
+            String reg = sc.nextLine();
+            double valor = lerDouble("Novo valor consulta: ");
+
+            System.out.print("Atualizar horarios? (1-Sim / 2-Nao): ");
+            int op = lerInteiro("");
+            if (op == 1) {
+                List<HorarioDisponivel> horarios = new ArrayList<>();
+                int qtd = lerInteiro("Quantos dias? ");
+                for (int i = 0; i < qtd; i++) {
+                    System.out.print("Dia: ");
+                    String dia = sc.nextLine();
+                    System.out.print("Turno (manha/tarde): ");
+                    String turno = sc.nextLine();
+                    horarios.add(new HorarioDisponivel(dia, turno));
+                }
+                prof.atualizar(reg, valor, horarios);
+            } else {
+                prof.atualizar(reg, valor);
+            }
+            System.out.println("Profissional atualizado!");
+
+        } catch (ProfissionalNaoEncontradoException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de atualizacao finalizada ---");
+        }
+    }
+
+    static void listarProfissionais() {
+        List<Profissional> lista = clinica.listarProfissionais();
+        if (lista.isEmpty()) {
+            System.out.println("Nenhum profissional."); return;
+        }
+        for (Profissional p : lista) System.out.println(p.exibirResumo());
+    }
+
+    static void filtrarProfissionais() {
+        System.out.print("Especialidade: ");
+        String esp = sc.nextLine();
+        List<Profissional> lista = clinica.filtrarPorEspecialidade(esp);
+        if (lista.isEmpty()) {
+            System.out.println("Nenhum profissional com essa especialidade."); return;
+        }
+        for (Profissional p : lista) System.out.println(p.exibirResumo());
+    }
 }
+
