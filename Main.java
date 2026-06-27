@@ -555,6 +555,92 @@ public class Main {
             System.out.println("--- operacao de atendimento finalizada ---");
         }
     }
+
+    // ======== PAGAMENTOS ========
+
+    static void menuPagamentos(Convenio[] convenios) {
+        int op = -1;
+        while (op != 0) {
+            System.out.println("\n--- PAGAMENTOS ---");
+            System.out.println("1 - Registrar pagamento");
+            System.out.println("2 - Listar pagamentos");
+            System.out.println("0 - Voltar");
+            System.out.print("Opcao: ");
+            try {
+                op = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Digite um numero valido.");
+                continue;
+            }
+            switch (op) {
+                case 1: registrarPagamento(convenios); break;
+                case 2: listarPagamentos(); break;
+                case 0: break;
+                default: System.out.println("Opcao invalida!");
+            }
+        }
+    }
+
+    static void registrarPagamento(Convenio[] convenios) {
+        try {
+            listarConsultas();
+            int idx = lerInteiro("Indice da consulta: ");
+            List<Consulta> lista = clinica.listarConsultas();
+
+            if (idx < 0 || idx >= lista.size()) {
+                System.out.println("Indice invalido.");
+                return;
+            }
+
+            Consulta consulta = lista.get(idx);
+            double valorBase = lerDouble("Valor base: ");
+
+            System.out.print("Tipo (dinheiro/cartao/convenio): ");
+            String tipo = sc.nextLine();
+
+            Pagamento pagamento;
+
+            switch (tipo) {
+                case "dinheiro":
+                    pagamento = new PagamentoDinheiro(consulta, valorBase);
+                    break;
+                case "cartao":
+                    int parcelas = lerInteiro("Parcelas (1-6): ");
+                    pagamento = new PagamentoCartao(consulta, valorBase, parcelas);
+                    break;
+                case "convenio":
+                    Convenio conv = escolherConvenio(convenios);
+                    if (conv == null) {
+                        System.out.println("Nenhum convenio selecionado.");
+                        return;
+                    }
+                    pagamento = new PagamentoConvenio(consulta, valorBase, conv);
+                    break;
+                default:
+                    throw new PagamentoInvalidoException(
+                            "Tipo de pagamento invalido: " + tipo
+                                    + ". Use: dinheiro, cartao ou convenio."
+                    );
+            }
+
+            clinica.registrarPagamento(pagamento);
+            System.out.println("Pagamento registrado!");
+            System.out.println(pagamento.exibirResumo());
+
+        } catch (PagamentoInvalidoException | ConvenioNaoCobreException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- Operacao de pagamento finalizada ---");
+        }
+    }
+
+    static void listarPagamentos() {
+        List<Pagamento> lista = clinica.listarPagamentos();
+        if (lista.isEmpty()) {
+            System.out.println("Nenhum pagamento."); return;
+        }
+        for (Pagamento p : lista) System.out.println(p.exibirResumo());
+    }
     
 
     
