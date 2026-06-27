@@ -358,5 +358,147 @@ public class Main {
             }
         }
     }
+
+    static void agendarComProfissional() {
+        try {
+            System.out.print("CPF do paciente: ");
+            String cpf = sc.nextLine();
+            Paciente paciente = clinica.buscarPaciente(cpf);
+
+            System.out.print("Nome do profissional: ");
+            String nomeProf = sc.nextLine();
+            Profissional profissional = clinica.buscarProfissional(nomeProf);
+
+            System.out.print("Data (DD/MM/AAAA): ");
+            String data = sc.nextLine();
+            System.out.print("Horario (HH:MM): ");
+            String horario = sc.nextLine();
+            System.out.print("Tipo (inicial/retorno/avaliacao): ");
+            String tipo = sc.nextLine();
+
+            Consulta consulta = new Consulta(paciente, profissional, data, horario, tipo);
+            clinica.agendarConsulta(consulta);
+            System.out.println("Consulta agendada com sucesso!");
+
+        } catch (PacienteNaoEncontradoException | ProfissionalNaoEncontradoException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } catch (PacienteInativoException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } catch (HorarioIndisponivelException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de agendamento finalizada ---");
+        }
+    }
+
+    static void agendarPorEspecialidade() {
+        try {
+            System.out.print("CPF do paciente: ");
+            String cpf = sc.nextLine();
+            Paciente paciente = clinica.buscarPaciente(cpf);
+
+            System.out.print("Especialidade: ");
+            String esp = sc.nextLine();
+            System.out.print("Data (DD/MM/AAAA): ");
+            String data = sc.nextLine();
+            System.out.print("Horario (HH:MM): ");
+            String horario = sc.nextLine();
+
+            String dia = clinica.descobrirDiaSemana(data);
+            List<Profissional> disponiveis = clinica.filtrarPorEspecialidade(esp);
+            Profissional escolhido = null;
+            for (Profissional p : disponiveis) {
+                if (p.atendeNoDia(dia) && !clinica.temConflito(p.getNome(), data, horario)) {
+                    escolhido = p;
+                    break;
+                }
+            }
+            if (escolhido == null) {
+                System.out.println("Nenhum profissional disponivel para essa especialidade/horario.");
+                return;
+            }
+
+            Consulta consulta = new Consulta(paciente, escolhido, data, horario);
+            clinica.agendarConsulta(consulta);
+            System.out.println("Consulta agendada com " + escolhido.getNome() + "!");
+
+        } catch (PacienteNaoEncontradoException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } catch (PacienteInativoException | HorarioIndisponivelException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de agendamento por especialidade finalizada ---");
+        }
+    }
+
+    static void cancelarConsulta() {
+        try {
+            System.out.print("CPF: ");
+            String cpf = sc.nextLine();
+            System.out.print("Data (DD/MM/AAAA): ");
+            String data = sc.nextLine();
+            System.out.print("Horario (HH:MM): ");
+            String horario = sc.nextLine();
+            System.out.print("Motivo: ");
+            String motivo = sc.nextLine();
+            System.out.print("Horario atual (HH:MM): ");
+            String horaAtual = sc.nextLine();
+
+            clinica.cancelarConsulta(cpf, data, horario, motivo, horaAtual);
+            System.out.println("Consulta cancelada.");
+
+        } catch (ConsultaNaoEncontradaException | OperacaoInvalidaException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de cancelamento finalizada ---");
+        }
+    }
+
+    static void remarcarConsulta() {
+        try {
+            System.out.print("CPF: ");
+            String cpf = sc.nextLine();
+            System.out.print("Data original (DD/MM/AAAA): ");
+            String data = sc.nextLine();
+            System.out.print("Horario original (HH:MM): ");
+            String horario = sc.nextLine();
+
+            Consulta consulta = clinica.buscarConsulta(cpf, data, horario);
+
+            System.out.print("Nova data (DD/MM/AAAA): ");
+            String novaData = sc.nextLine();
+            System.out.print("Novo horario (HH:MM): ");
+            String novoHorario = sc.nextLine();
+
+            clinica.remarcarConsulta(consulta, novaData, novoHorario);
+            System.out.println("Consulta remarcada!");
+
+        } catch (ConsultaNaoEncontradaException | OperacaoInvalidaException
+                 | HorarioIndisponivelException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de remarcacao finalizada ---");
+        }
+    }
+
+    static void listarConsultas() {
+        List<Consulta> lista = clinica.listarConsultas();
+        if (lista.isEmpty()) { System.out.println("Nenhuma consulta."); return; }
+        for (int i = 0; i < lista.size(); i++) {
+            System.out.println("[" + i + "] " + lista.get(i).exibirResumo());
+        }
+    }
+
+    static void buscarConsultasPorCpf() {
+        System.out.print("CPF: ");
+        String cpf = sc.nextLine();
+        List<Consulta> lista = clinica.buscarConsultasPorPaciente(cpf);
+        if (lista.isEmpty()) { System.out.println("Nenhuma consulta encontrada."); return; }
+        for (Consulta c : lista) System.out.println(c.exibirResumo());
+    }
+
+    
+
+    
 }
 
