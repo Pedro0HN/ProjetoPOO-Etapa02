@@ -497,6 +497,64 @@ public class Main {
         for (Consulta c : lista) System.out.println(c.exibirResumo());
     }
 
+
+    // ======== ATENDIMENTOS ========
+
+    static void menuAtendimentos() {
+        int op = -1;
+        while (op != 0) {
+            System.out.println("\n--- ATENDIMENTOS ---");
+            System.out.println("1 - Registrar atendimento");
+            System.out.println("0 - Voltar");
+            System.out.print("Opcao: ");
+            try {
+                op = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Digite um numero valido.");
+                continue;
+            }
+            if (op == 1) registrarAtendimento();
+        }
+    }
+
+    static void registrarAtendimento() {
+        try {
+            listarConsultas();
+            int idx = lerInteiro("Indice da consulta: ");
+            List<Consulta> lista = clinica.listarConsultas();
+
+            if (idx < 0 || idx >= lista.size()) {
+                System.out.println("Indice invalido.");
+                return;
+            }
+
+            Consulta consulta = lista.get(idx);
+            System.out.print("Observacoes: ");
+            String obs = sc.nextLine();
+            System.out.print("Diagnostico: ");
+            String diag = sc.nextLine();
+            System.out.print("Data do registro (DD/MM/AAAA): ");
+            String dataReg = sc.nextLine();
+
+            Prontuario prontuario = new Prontuario(obs, diag, dataReg);
+
+            int qtdProc = lerInteiro("Quantos procedimentos? ");
+            for (int i = 0; i < qtdProc; i++) {
+                System.out.print("Procedimento " + (i+1) + ": ");
+                prontuario.adicionarProcedimento(sc.nextLine());
+            }
+
+            Atendimento atendimento = new Atendimento(consulta, prontuario);
+            clinica.registrarAtendimento(atendimento);
+            System.out.println("Atendimento registrado!");
+            System.out.println(atendimento.exibirResumo());
+
+        } catch (OperacaoInvalidaException e) {
+            System.out.println("Erro: " + e.getMessage());
+        } finally {
+            System.out.println("--- operacao de atendimento finalizada ---");
+        }
+    }
     
 
     
