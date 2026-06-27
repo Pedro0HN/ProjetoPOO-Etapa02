@@ -31,4 +31,40 @@ public class Consulta implements Agendavel, Exportavel {
         this.status = "agendada";
         this.motivoCancelamento = "";
     }
+     // getters
+    public Paciente getPaciente() { return paciente; }
+    public Profissional getProfissional() { return profissional; }
+    public String getData() { return data; }
+    public String getHorario() { return horario; }
+    public String getTipo() { return tipo; }
+    public String getStatus() { return status; }
+    public String getMotivoCancelamento() { return motivoCancelamento; }
+
+    // setters
+    public void setData(String data) { this.data = data; }
+    public void setHorario(String horario) { this.horario = horario; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    // ---- implementacao de Agendavel ----
+
+    @Override
+    public void agendar() {
+        this.status = "agendada";
+    }
+
+    @Override
+    public void cancelar(String motivo) throws OperacaoInvalidaException {
+        if (status.equals("realizada")) {
+            throw new OperacaoInvalidaException(
+                    "Nao e possivel cancelar uma consulta ja realizada."
+            );
+        }
+        if (status.equals("cancelada")) {
+            throw new OperacaoInvalidaException(
+                    "Esta consulta ja esta cancelada."
+            );
+        }
+        this.status = "cancelada";
+        this.motivoCancelamento = motivo;
+    }
 
