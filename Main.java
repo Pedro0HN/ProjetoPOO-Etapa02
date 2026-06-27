@@ -641,7 +641,46 @@ public class Main {
         }
         for (Pagamento p : lista) System.out.println(p.exibirResumo());
     }
-    
+
+    // ======== RELATORIOS ========
+
+    static void menuRelatorios() {
+        int op = -1;
+        while (op != 0) {
+            System.out.println("\n--- RELATORIOS ---");
+            System.out.println("1 - Todas as pessoas (ligacao dinamica)");
+            System.out.println("2 - Resumo financeiro");
+            System.out.println("3 - Exportar dados das consultas");
+            System.out.println("0 - Voltar");
+            System.out.print("Opcao: ");
+            try {
+                op = Integer.parseInt(sc.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Digite um numero valido.");
+                continue;
+            }
+            switch (op) {
+                case 1: clinica.exibirTodasPessoas(); break;
+                case 2: clinica.exibirResumoFinanceiro(); break;
+                case 3: exportarConsultas(); break;
+                case 0: break;
+                default: System.out.println("Opcao invalida!");
+            }
+        }
+    }
+
+    static void exportarConsultas() {
+        List<Consulta> lista = clinica.listarConsultas();
+        if (lista.isEmpty()) {
+            System.out.println("Nenhuma consulta para exportar.");
+            return;
+        }
+        System.out.println("\n=== EXPORTACAO DE DADOS ===");
+        // trata Consulta como Exportavel
+        for (Exportavel e : lista) {
+            System.out.println(e.exportarDados());
+        }
+    }
 
     
 }
