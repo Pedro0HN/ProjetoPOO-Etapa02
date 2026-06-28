@@ -79,7 +79,43 @@ public abstract class Profissional extends Pessoa {
         setValorConsulta(valor);
         this.horariosDisponiveis = new ArrayList<>(horarios);
     }
+    public void adicionarHorario(HorarioDisponivel horario) {
+        horariosDisponiveis.add(horario);
+    }
 
+    public boolean atendeNoDia(String dia) {
+        for (HorarioDisponivel h : horariosDisponiveis) {
+            if (h.getDiaSemana().equals(dia)) return true;
+        }
+        return false;
+    }
 
+    // metodo protegido
+    protected String dadosBase() {
+        String dias = "";
+        for (int i = 0; i < horariosDisponiveis.size(); i++) {
+            if (i > 0) dias += ", ";
+            dias += horariosDisponiveis.get(i).toString();
+        }
+        return "Nome: " + nome + " | Espec: " + especialidade
+                + " | Reg: " + registroProfissional
+                + " | Valor: R$" + valorConsulta
+                + " | Horarios: " + dias;
+    }
 
-   
+    // metodo especifico de cada especializacao
+    public abstract void registrarEspecifico(Atendimento atendimento);
+
+    // validacao estatica
+    public static boolean especialidadeValida(String esp) {
+        for (String e : ESPECIALIDADES_VALIDAS) {
+            if (e.equals(esp)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String exibirResumo() {
+        return dadosBase();
+    }
+}
