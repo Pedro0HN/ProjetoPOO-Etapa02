@@ -68,3 +68,49 @@ public class Consulta implements Agendavel, Exportavel {
         this.motivoCancelamento = motivo;
     }
 
+    @Override
+    public void remarcar() throws OperacaoInvalidaException {
+        if (!status.equals("agendada")) {
+            throw new OperacaoInvalidaException(
+                    "So e possivel remarcar consultas com status 'agendada'."
+            );
+        }
+        this.status = "remarcada";
+    }
+
+    public void realizar() throws OperacaoInvalidaException {
+        if (!status.equals("agendada")) {
+            throw new OperacaoInvalidaException(
+                    "So e possivel realizar consultas com status 'agendada'."
+            );
+        }
+        this.status = "realizada";
+    }
+
+    // ---- implementacao de Exportavel ----
+
+    @Override
+    public String exportarDados() {
+        return "[CONSULTA]"
+                + " | CPF: " + paciente.getCpf()
+                + " | Paciente: " + paciente.getNome()
+                + " | Profissional: " + profissional.getNome()
+                + " | Especialidade: " + profissional.getEspecialidade()
+                + " | Data: " + data
+                + " | Hora: " + horario
+                + " | Tipo: " + tipo
+                + " | Status: " + status;
+    }
+
+    public String exibirResumo() {
+        return "Paciente: " + paciente.getNome()
+                + " | Prof: " + profissional.getNome()
+                + " | Data: " + data + " | Hora: " + horario
+                + " | Tipo: " + tipo + " | Status: " + status;
+    }
+}
+ 
+
+
+
+
